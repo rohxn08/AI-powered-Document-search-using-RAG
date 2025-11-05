@@ -1,6 +1,4 @@
-"""
-Embedding generation and vector store management.
-"""
+
 
 import os
 import pickle
