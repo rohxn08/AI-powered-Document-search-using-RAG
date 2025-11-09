@@ -27,7 +27,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Load environment variables from .env if present
+
 load_dotenv()
 
 # Initialize session state
