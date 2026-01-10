@@ -22,7 +22,7 @@ A complete Retrieval-Augmented Generation (RAG) system that allows users to uplo
 
 ### For Local Installation:
 - Python 3.8+
-- OpenAI API key (**required** for LLM question answering)
+- Google Gemini api key (**required** for LLM question answering)
 
 > **💡 Need an API key?** Get one free at https://platform.openai.com/api-keys (you get free credits to start!)
 
