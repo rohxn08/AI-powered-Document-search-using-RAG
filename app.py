@@ -15,10 +15,7 @@ except Exception:
     genai = None
     _GEMINI_IMPORT_OK = False
 
-from ingestion.extract_text import DocumentExtractor
-from ingestion.chunker import TextChunker
-from ingestion.embed_store import EmbeddingStore
-from retrieval.rag_pipeline import RAGPipeline
+
 
 # Page configuration
 st.set_page_config(
@@ -48,6 +45,10 @@ def initialize_rag_system(use_openai_embeddings: bool = False,
                           llm_provider: str = "gemini",
                           gemini_api_key: str = None):
     """Initialize RAG system components."""
+    # Lazy import to speed up app startup
+    from ingestion.embed_store import EmbeddingStore
+    from retrieval.rag_pipeline import RAGPipeline
+
     try:
         # Initialize embedding store
         embedding_store = EmbeddingStore(
@@ -86,6 +87,10 @@ def initialize_rag_system(use_openai_embeddings: bool = False,
 def process_document(file_path: str = None, url: str = None):
     """Process a document: extract, chunk, and store."""
     try:
+        # Lazy import
+        from ingestion.extract_text import DocumentExtractor
+        from ingestion.chunker import TextChunker
+
         extractor = DocumentExtractor()
         chunker = TextChunker(chunk_size=500, chunk_overlap=50)
         
