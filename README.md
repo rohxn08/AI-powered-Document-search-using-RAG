@@ -1,256 +1,132 @@
-# 🧠 AI-Powered Document Search and Question Answering using RAG
+# AI POWERED Document Search
 
-A complete Retrieval-Augmented Generation (RAG) system that allows users to upload documents and ask natural language questions, with answers generated from the uploaded document content.
+## Contents
+- [Introduction](#1-introduction)
+- [Demo](#2-demo)
+- [Model Summary](#3-model-summary)
+- [Features](#4-features)
+- [Tech Stack](#5-tech-stack)
+- [Project Structure](#6-project-structure)
+- [How to Run the App](#7-how-to-run-the-app)
+- [Difficulties Faced](#8-difficulties-faced)
+- [Future Improvements](#9-future-improvements)
 
-## 🚀 Features
+## 1. Introduction
+The **AI POWERED Document Search** is a robust Retrieval-Augmented Generation (RAG) system designed to allow users to chat with their documents. Whether it's a technical PDF spec, a research paper, or a live website URL, this system leverages a hybrid AI approach—combining specific semantic search (FAISS + SentenceTransformers) and modern LLM capabilities (Google Gemini 2.5)—to ensure high-accuracy answers with traceable sources.
 
-- **Document Ingestion**: Upload PDFs, TXT files, DOCX files, or fetch from URLs
-- **Text Extraction**: Automatic text extraction from various document formats
-- **Intelligent Chunking**: Split documents into overlapping segments for better retrieval
-- **Vector Embeddings**: Generate embeddings using sentence-transformers or OpenAI
-- **Vector Store**: FAISS-based local vector database for fast similarity search
-- **RAG Pipeline**: Retrieve relevant chunks and generate context-grounded answers
-- **Web Interface**: User-friendly Streamlit interface
-- **Conversation History**: Save and view Q&A history
-- **Source Citation**: See which parts of documents were used for answers
+The application features a polished Streamlit interface that supports drag-and-drop file ingestion, URL processing, and real-time interactive Q&A with transparent source citation.
 
-## 📋 Prerequisites
+## 2. Demo
+(Add your demo video or GIF here)
 
-### For Docker:
-- Docker and Docker Compose installed
-- OpenAI API key (**required** for LLM question answering)
+## 3. Model Summary
+The system employs a two-stage pipeline to handle large-scale document understanding:
 
-### For Local Installation:
-- Python 3.8+
-- Google Gemini api key (**required** for LLM question answering)
+### A. Generation: Google Gemini 2.5
+The primary engine for generating natural language responses is the Google Gemini family of models.
 
-> **💡 Need an API key?** Get one free at https://platform.openai.com/api-keys (you get free credits to start!)
+- **Models Supported**: `gemini-2.5-flash` (Speed/Cost optimized), `gemini-2.5-pro` (Reasoning optimized).
+- **Role**: Synthesizes answers based on the context chunks retrieved from the vector store.
+- **Key Behavior**: Configured to provide concise, context-aware answers while strictly adhering to the provided source material.
 
-## 🛠️ Installation
+### B. Retrieval: Sentence Transformers + FAISS
+For semantic search and context retrieval, we rely on a high-efficiency embedding pipeline.
 
-### Option 1: Docker (Recommended)
+- **Encoder**: `sentence-transformers/all-MiniLM-L6-v2` to capture semantic meaning of text chunks.
+- **Store**: FAISS (Facebook AI Similarity Search) for millisecond-scale similarity search.
+- **Strategy**: Chunks documents into 500-token segments with 50-token overlap to maintain context continuity.
 
-1. Clone or download this repository
+## 4. Features
 
-2. Build and run with Docker Compose:
-```bash
-# Set your OpenAI API key (optional)
-export OPENAI_API_KEY="your-api-key-here"
+### Dual-Import Interface
+**File Ingestion**:
+- **Multi-Format Support**: Native handling for PDF, DOCX, and TXT files.
+- **Secure Processing**: Files are processed locally/temporarily and converted to vector embeddings without permanent storage of raw text.
 
-# Build and run
-docker-compose up --build
+**Web Processing**:
+- **Direct URL Fetching**: Scrapes and parses text content directly from provided URLs for instant analysis of web pages.
+
+### Research-Oriented Q&A
+- **Source Citation**: Every answer is accompanied by an "Expandable" source list, showing exactly which document and chunk the information came from.
+- **Context Transparency**: Users can view the exact raw text segments the LLM used to generate the answer, ensuring trust and verifiability.
+- **History Tracking**: Automatically saves the session's Q&A history for easy reference.
+
+### Advanced Logic
+- **Lazy Loading Implementation**: Critical components (RAG Pipeline, Embedding Models) are imported only when needed, reducing initial app startup time significantly.
+- **Dynamic Configuration**: Users can switch between Gemini models or update API keys on the fly via the sidebar without restarting the server.
+
+## 5. Tech Stack
+
+### Frontend & Application
+- **Streamlit**: For the interactive web interface, session state management, and responsive layout.
+
+### AI & Backend
+- **Google Generative AI SDK**: Direct integration with Gemini models.
+- **Sentence Transformers**: For generating local, high-quality text embeddings.
+- **FAISS**: For efficient vector storage and similarity search.
+
+### Infrastructure & Processing
+- **PyMuPDF / Python-Docx**: Robust parsing libraries for complex document formats.
+- **BeautifulSoup4**: For cleaning and extracting text from web URLs.
+- **Numpy**: For handling vector operations.
+- **Python-Dotenv**: for secure environment variable management.
+
+## 6. Project Structure
 ```
-
-Or using Docker directly:
-```bash
-# Build the image
-docker build -t ai-doc-search-rag .
-
-# Run the container
-docker run -p 8501:8501 \
-  -v $(pwd)/models:/app/models \
-  -e OPENAI_API_KEY="your-api-key-here" \
-  ai-doc-search-rag
-```
-
-The application will be available at `http://localhost:8501`
-
-### Option 2: Local Installation
-
-1. Clone or download this repository
-
-2. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-3. Set OpenAI API key (required for LLM):
-   
-   **Option A: Environment Variable (Recommended)**
-   ```bash
-   # Windows PowerShell
-   $env:OPENAI_API_KEY="your-api-key-here"
-   
-   # Windows CMD
-   set OPENAI_API_KEY=your-api-key-here
-   
-   # Linux/Mac
-   export OPENAI_API_KEY="your-api-key-here"
-   ```
-   
-   **Option B: .env File**
-   ```bash
-   cp .env.example .env
-   # Edit .env and add your API key
-   ```
-   
-   **Option C: Streamlit UI**
-   - Enter it in the sidebar when the app runs
-   
-   📖 **See [SETUP_API_KEY.md](SETUP_API_KEY.md) for detailed instructions**
-
-## 🎯 Usage
-
-### Docker
-```bash
-docker-compose up
-```
-Access at `http://localhost:8501`
-
-### Local
-1. Start the Streamlit application:
-```bash
-streamlit run app.py
-```
-
-2. **Configure the system** (in the sidebar):
-   - Choose whether to use OpenAI embeddings (default: sentence-transformers)
-   - Choose LLM model (default: GPT-3.5-turbo)
-   - Enter OpenAI API key if using OpenAI services
-   - Click "Initialize System"
-
-3. **Upload documents**:
-   - Go to "Upload Documents" tab
-   - Upload PDF/TXT/DOCX files or enter a URL
-   - Click "Process Document"
-   - Wait for indexing to complete
-
-4. **Ask questions**:
-   - Go to "Ask Questions" tab
-   - Enter your question
-   - Adjust number of chunks to retrieve (default: 5)
-   - Click "Get Answer"
-   - View answer with source citations
-
-5. **View history**:
-   - Check "History" tab for past Q&A sessions
-
-## 📁 Project Structure
-
-```
-ai_doc_search_rag/
-│
-├── app.py                 # Main Streamlit web interface
-├── requirements.txt       # Python dependencies
-├── README.md             # This file
-├── Dockerfile            # Docker container definition
-├── docker-compose.yml    # Docker Compose configuration
-├── docker-run.sh         # Convenience script (Linux/Mac)
-├── docker-run.bat        # Convenience script (Windows)
-├── .dockerignore         # Files to exclude from Docker build
-│
+AI POWERED Document Search/
+├── app.py                     # Streamlit Frontend & Main Entry Point
 ├── ingestion/
-│   ├── extract_text.py   # PDF/DOCX/URL text extraction
-│   ├── chunker.py        # Text chunking logic
-│   └── embed_store.py    # Embedding + vector store setup
-│
+│   ├── chunker.py             # Text splitting and windowing logic
+│   ├── embed_store.py         # FAISS vector store wrapper
+│   └── extract_text.py        # PDF/DOCX/URL parsing logic
 ├── retrieval/
-│   └── rag_pipeline.py   # RAG: retrieve + generate answer
-│
-└── models/
-    ├── vector_store/     # FAISS index and metadata
-    └── chunks_storage.pkl # Stored chunk texts
+│   └── rag_pipeline.py        # RAG orchestration (Retrieve + Generate)
+├── models/
+│   └── vector_store/          # Local FAISS index artifacts
+├── .env                       # API Keys and Config
+└── requirements.txt           # Project Dependencies
 ```
 
-## 🔧 Architecture
+## 7. How to Run the App
 
-### Document Processing Flow
+### Prerequisites
+- Python 3.10 or higher
+- A Google Gemini API Key
 
-1. **Extraction**: Document → Text (using PyMuPDF, python-docx, or BeautifulSoup)
-2. **Chunking**: Text → Overlapping chunks (500 tokens, 50 overlap)
-3. **Embedding**: Chunks → Vector embeddings (sentence-transformers or OpenAI)
-4. **Storage**: Embeddings → FAISS vector database
+### Quick Start
+1. **Clone the repository** (if applicable) or navigate to the project folder.
 
-### Question Answering Flow
+2. **Install Dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-1. **Query Embedding**: Question → Vector embedding
-2. **Retrieval**: Search FAISS for top-k similar chunks
-3. **Context Building**: Combine retrieved chunks as context
-4. **Generation**: LLM generates answer from context + question
-5. **Response**: Answer + source citations
+3. **Configure Environment**:
+   - Create a `.env` file in the root directory.
+   - Add your API key:
+     ```
+     GOOGLE_API_KEY=your_api_key_here
+     ```
 
-## ⚙️ Configuration Options
+4. **Run the Application**:
+   ```bash
+   streamlit run app.py
+   ```
+   
+### Accessing the App
+- **Web Interface**: http://localhost:8501
 
-### Embedding Models
-- **Default**: `sentence-transformers/all-MiniLM-L6-v2` (free, local)
-- **OpenAI**: `text-embedding-ada-002` (requires API key)
+## 8. Difficulties Faced
+1. **Startup Latency**: Initial loading of `sentence-transformers` and FAISS indexes caused the Streamlit app to hang on start.
+   - **Solution**: We implemented "Lazy Imports" inside the initialization functions. Heavy libraries are only loaded into memory when the user clicks "Initialize System," keeping the UI snappy on first load.
 
-### LLM Models
-- `gpt-3.5-turbo` (default, cost-effective)
-- `gpt-4` (higher quality, more expensive)
-- `gpt-4-turbo-preview` (latest GPT-4 variant)
+2. **Context Window Limitations**: Handling large PDFs often exceeded the token limits of the embedding models.
+   - **Solution**: Implemented a robust `TextChunker` with sliding windows (500 limit, 50 overlap) to ensure no information is lost at chunk boundaries.
 
-### Chunking Parameters
-- Chunk size: 500 tokens
-- Overlap: 50 tokens
-- Adjustable in code
+3. **Deployment Consistency**: Managing API keys across different environments (local vs. cloud) was error-prone.
+   - **Solution**: Added a hybrid check that looks for `.env` files first, but falls back to user UI input if no environment variables are detected.
 
-## 🎨 Features in Detail
-
-### Document Formats Supported
-- **PDF**: Extracts text from all pages
-- **TXT**: Plain text files (UTF-8 or Latin-1)
-- **DOCX**: Microsoft Word documents
-- **URLs**: HTML pages or PDFs from URLs
-
-### Vector Search
-- Uses FAISS (Facebook AI Similarity Search) for fast similarity search
-- L2 distance metric for finding closest embeddings
-- Stores metadata (filename, chunk index, source) with each vector
-
-### RAG Pipeline
-- Retrieves top-k most relevant document chunks
-- Builds context prompt with retrieved content
-- Generates answers that are grounded in document content
-- Provides source attribution for transparency
-
-## 🔍 Example Use Cases
-
-- **Research Paper Q&A**: Upload research papers and ask specific questions
-- **Documentation Search**: Index documentation and find answers quickly
-- **Legal Document Analysis**: Extract information from contracts or legal docs
-- **Educational Content**: Upload textbooks and get study answers
-- **Corporate Knowledge Base**: Index internal documents for employee queries
-
-## 🐛 Troubleshooting
-
-### Docker Issues
-- **Port already in use**: Change the port mapping in `docker-compose.yml` (e.g., `"8502:8501"`)
-- **Permission errors**: Ensure Docker has access to the `models` directory
-- **Build fails**: Make sure you're in the project root directory when building
-- **Memory issues**: Increase Docker memory allocation if processing large documents
-
-### Import Errors
-- Make sure all dependencies are installed: `pip install -r requirements.txt`
-- For FAISS on Mac M1/M2: Use `faiss-cpu` (already in requirements)
-- In Docker: All dependencies are pre-installed in the image
-
-### OpenAI API Issues
-- Verify API key is correct
-- Check API quota/billing
-- Try using sentence-transformers instead (free alternative)
-- In Docker: Set `OPENAI_API_KEY` as environment variable or in docker-compose.yml
-
-### Document Processing Errors
-- Ensure PDFs are not corrupted or password-protected
-- Check URL accessibility for web scraping
-- Verify file formats are supported
-- In Docker: Use volume mounts to access local files (see docker-compose.yml)
-
-## 📝 License
-
-This project is open source and available for educational and commercial use.
-
-## 🤝 Contributing
-
-Feel free to submit issues, fork the repository, and create pull requests.
-
-## 🙏 Acknowledgments
-
-- Built with Streamlit, FAISS, sentence-transformers, and OpenAI
-- Inspired by RAG architecture from Retrieval-Augmented Generation papers
-
----
-
-**Enjoy your AI-powered document search system! 🚀**
-
+## 9. Future Improvements
+- **Multimodal Support**: Integrate support for Image and Video ingestion to allow "asking questions" about diagrams or visual content.
+- **Persistent Vector Database**: Migrate from local FAISS files to a cloud-based solution (like Pinecone) to allow knowledge bases to persist across server restarts.
+- **Conversational Memory**: Enhance the RAG pipeline to be fully conversational, where the model remembers context from previous questions in the session.
